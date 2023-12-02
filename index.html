@@ -1,0 +1,107 @@
+<html lang='en'>
+
+<head>
+  <meta charset='utf-8' />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+
+</head>
+
+<body>
+
+  
+  <h1>API Request</h1>
+  <button onclick="addEvent()">Add Event +</button>
+  <br>
+  <form>
+    <input type="text" id="title" placeholder="Event Title">
+    <input type="date" id="date" placeholder="Date Event">
+  </form>
+  <!-- <button onclick="updateEvent()">Update Event </button> -->
+  <button onclick="getEvents()">הצג את רשימת האירועים </button>
+  
+  <button onclick="deleteEvent()">Delete & Update Event </button>
+
+  <div id="showEvent"></div>
+  <div id='calendar'></div>
+  <br />
+  <p>Request Result</p>
+  <div id="request_result"></div>
+
+  <script>
+    //פונקציה המציגה את האירועים בעת טעינת הדף
+    //GET
+    document.addEventListener('DOMContentLoaded', function () {
+      axios.get("https://localhost:7096/api/Events").then((res) => {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          events: res.data,
+        });
+        calendar.render();
+      });
+    });
+
+    //פונקציה המוסיפה אירוע חדש
+    //POST
+    function addEvent() {
+      let title = document.getElementById('title').value;
+      let date = document.getElementById('date').value;
+      axios.post("https://localhost:7096/api/Events", {
+        "title": title,
+        "start": date,
+      })
+        .then((res) => {
+          document.getElementById('request_result').innerHTML = JSON.stringify(res.data);
+        })
+    }
+
+    let arr;
+    // פונקציה להצגת כל האירועים
+    function getEvents() {
+      arr = axios.get("https://localhost:7096/api/Events")
+    }
+
+    function deleteEvent() {
+      axios.get("https://localhost:7096/api/Events")
+      .then(res => {
+        let arr = res.data
+        console.log("arr", arr)
+        for ( let event of arr) {
+          console.log(event)
+          let div = document.createElement("div");
+          div.innerHTML = `<li> אירוע מס' ${event.id} ${event.title} בתאריך: ${event.date}`;
+          document.getElementById('showEvent').append(div);
+          div.innerHTML += `<button datd-sku=${event.id} onclick="delet1(${event.id})">מחק אירוע</button>`
+          div.innerHTML += `<button datd-sku=${event.id} onclick="updateEvent(${event.id})">עדכן אירוע</button>`
+
+        }
+      })
+    }
+
+    //פונקציה המוחקת אירוע
+    //Delet
+    function delet1(id) {
+      console.log("arr from delet1 func", arr)
+      axios.delet(`https://localhost:7096/api/Events${id}`).then(response => {
+        document.getElementById('calendar').innerHTML = 'הארוע נמחק בהצלחה';
+        alert("deletteEvent");
+
+      })
+    }
+    //פונקציה המעדכנת אירוע
+    // PUT
+    function updateEvent(id) {
+      let div = document.createElement('div');
+      div.innerHTML = `<input type="text" name=title value=${id}></input>`
+      div.innerHTML+= `<input type="text" name=start >${id}</input>`
+      document.getElementById("showEvent").append(div)
+
+      alert("updateEvent");
+        }
+  </script>
+</body>
+
+</html>
